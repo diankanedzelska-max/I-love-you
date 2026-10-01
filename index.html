@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love You</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        #heart-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        .word {
+            position: absolute;
+            color: #ffcdd2; /* Світло-рожевий/білий центр */
+            text-shadow: 0 0 5px #ff1744, 0 0 10px #d50000, 0 0 20px #b71c1c; /* Червоне світіння */
+            font-weight: bold;
+            opacity: 0;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            transition: opacity 2s ease-in-out; /* Плавна поява */
+            user-select: none;
+            cursor: default;
+        }
+
+        /* Анімація миготіння маленьких слів */
+        @keyframes flicker {
+            0% { 
+                opacity: var(--max-opacity); 
+                text-shadow: 0 0 5px #ff1744, 0 0 10px #d50000, 0 0 20px #b71c1c; 
+            }
+            50% { 
+                opacity: calc(var(--max-opacity) * 0.3); 
+                text-shadow: 0 0 2px #ff1744, 0 0 5px #d50000, 0 0 10px #b71c1c; 
+            }
+            100% { 
+                opacity: var(--max-opacity); 
+                text-shadow: 0 0 5px #ff1744, 0 0 10px #d50000, 0 0 20px #b71c1c; 
+            }
+        }
+        
+        /* Анімація миготіння фінального великого тексту */
+        @keyframes flickerCenter {
+            0% { 
+                opacity: var(--max-opacity); 
+                text-shadow: 0 0 15px #ffffff, 0 0 30px #ff1744, 0 0 50px #d50000; 
+            }
+            50% { 
+                opacity: calc(var(--max-opacity) * 0.5); 
+                text-shadow: 0 0 5px #ffffff, 0 0 15px #ff1744, 0 0 30px #d50000; 
+            }
+            100% { 
+                opacity: var(--max-opacity); 
+                text-shadow: 0 0 15px #ffffff, 0 0 30px #ff1744, 0 0 50px #d50000; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="heart-container"></div>
+
+    <script>
+        const container = document.getElementById('heart-container');
+        const words = ["Love you", "LOVE YOU", "love you", "Love You", "L Love you U"];
+        
+        const numPoints = 400; 
+        
+        const scale = Math.min(window.innerWidth, window.innerHeight) / 40;
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2 - 20;
+
+        const outlinePoints = [];
+        const fillPoints = [];
+
+        // 1. Генеруємо точки по контуру серця
+        for (let i = 0; i < numPoints; i++) {
+            const t = Math.PI * 2 * (i / numPoints);
+            
+            const x = 16 * Math.pow(Math.sin(t), 3);
+            const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+            
+            const finalX = centerX + x * scale;
+            const finalY = centerY + y * scale;
+            
+            outlinePoints.push({ x: finalX, y: finalY, t: t, isOutline: true });
+        }
+        
+        outlinePoints.sort((a, b) => a.t - b.t);
+
+        // 2. Генеруємо точки для заповнення всередині
+        for (let i = 0; i < 300; i++) { 
+            const randT = Math.random() * Math.PI * 2;
+            const randR = Math.random() * 0.85; 
+            
+            const x = 16 * Math.pow(Math.sin(randT), 3) * randR;
+            const y = -(13 * Math.cos(randT) - 5 * Math.cos(2*randT) - 2 * Math.cos(3*randT) - Math.cos(4*randT)) * randR;
+            
+            const finalX = centerX + x * scale;
+            const finalY = centerY + y * scale;
+            
+            fillPoints.push({ x: finalX, y: finalY, isOutline: false });
+        }
+
+        fillPoints.sort(() => Math.random() - 0.5);
+
+        const points = outlinePoints.concat(fillPoints);
+
+        // 3. Створюємо елементи та анімуємо їх
+        points.forEach((point, index) => {
+            const el = document.createElement('div');
+            el.className = 'word';
+            el.textContent = words[Math.floor(Math.random() * words.length)];
+            el.style.left = point.x + 'px';
+            el.style.top = point.y + 'px';
+            
+            if (point.isOutline) {
+                el.style.fontSize = (10 + Math.random() * 4) + 'px'; 
+            } else {
+                el.style.fontSize = (12 + Math.random() * 8) + 'px'; 
+            }
+            
+            const maxOpacity = 0.5 + Math.random() * 0.5;
+            el.style.setProperty('--max-opacity', maxOpacity);
+            
+            container.appendChild(el);
+            
+            const totalDuration = 10000;
+            const delay = (index / points.length) * totalDuration;
+            
+            setTimeout(() => {
+                el.style.opacity = maxOpacity;
+                
+                setTimeout(() => {
+                    const flickerDuration = 1.5 + Math.random() * 2.5; 
+                    const flickerDelay = Math.random() * 2;
+                    el.style.animation = `flicker ${flickerDuration}s ease-in-out ${flickerDelay}s infinite alternate`;
+                }, 2000); 
+
+            }, delay + 500);
+        });
+
+        // 4. Показуємо великий напис "I Love You"
+        setTimeout(() => {
+            const centerText = document.createElement('div');
+            centerText.textContent = "I Love You";
+            centerText.style.position = 'absolute';
+            centerText.style.left = centerX + 'px';
+            centerText.style.top = centerY + 'px';
+            centerText.style.transform = 'translate(-50%, -50%)';
+            
+            centerText.style.color = '#ffffff';
+            centerText.style.fontFamily = 'Georgia, "Times New Roman", serif'; 
+            centerText.style.fontSize = '4.5rem';
+            centerText.style.fontWeight = 'bold';
+            // Початкове світіння для тексту (таке ж як в анімації)
+            centerText.style.textShadow = '0 0 15px #ffffff, 0 0 30px #ff1744, 0 0 50px #d50000';
+            
+            centerText.style.opacity = '0';
+            centerText.style.transition = 'opacity 3s ease-in-out';
+            centerText.style.zIndex = '100';
+            
+            centerText.style.setProperty('--max-opacity', '1');
+            
+            container.appendChild(centerText);
+            
+            centerText.offsetHeight; 
+            centerText.style.opacity = '1';
+
+            // Напис "I Love You" повільно миготітиме/пульсуватиме червоним світінням
+            setTimeout(() => {
+                centerText.style.animation = `flickerCenter 3s ease-in-out infinite alternate`;
+            }, 3000);
+
+        }, 11500); 
+    </script>
+</body>
+</html>
